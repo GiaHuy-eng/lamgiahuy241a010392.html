@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Đề thi kết thúc học phần - Lập trình Web</title>
+<style>
+:root{--ink:#1d2140;--bg:#f3f4fa;--navy:#1f2a52;--red:#c8372d;--gold:#f2b134;--line:#dde0ee}
+*{box-sizing:border-box}body{margin:0;font:16px/1.65 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+nav{position:sticky;top:0;z-index:5;background:var(--navy);display:flex;flex-wrap:wrap;gap:4px;padding:8px 14px}
+nav a{color:#fff;text-decoration:none;padding:7px 12px;border-radius:6px;font-weight:600}nav a:hover,nav a.on{background:var(--red)}
+header{background:linear-gradient(135deg,#1f2a52,#3a3560);color:#fff;padding:28px 16px;text-align:center}
+header h1{margin:0;font-size:clamp(1.4rem,4vw,2.2rem)}header p{margin:6px 0 0;opacity:.8}
+main{max-width:920px;margin:0 auto;padding:20px 14px}
+section{background:#fff;border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px #1f2a5214}
+h2{margin:0 0 12px;color:var(--navy)}h3{margin:0;font-size:1.02rem}
+input:not([type=checkbox]){width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;font:inherit}
+input:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button{font:inherit;font-weight:600;padding:10px 18px;border:0;border-radius:8px;background:var(--navy);color:#fff;cursor:pointer}
+button:hover{background:var(--red)}button.ghost{background:#e6e9f7;color:var(--navy)}button.ghost:hover{background:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:12px}
+.card{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fafbff}.card p{margin:6px 0 0;color:var(--red);font-weight:700}
+mark{background:var(--gold);padding:0 2px;border-radius:3px}
+.logic{margin-top:14px;background:#eef1ff;border-left:4px solid var(--navy);border-radius:6px;padding:10px 14px;font-size:.93rem}
+.logic ul{margin:6px 0 0;padding-left:20px}
+form{display:grid;gap:6px;max-width:420px}label{font-weight:600}.chk{display:flex;gap:8px;align-items:center}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row.c{justify-content:center}
+.rules{list-style:none;padding:0;margin:2px 0;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.88rem;color:#6b7090}
+.rules li::before{content:"○ "}.rules li.pass{color:#1b7f3b}.rules li.pass::before{content:"✓ "}
+.err{color:var(--red);font-weight:600;min-height:1.1em;font-size:.92rem}.okmsg{color:#1b7f3b;font-weight:700}.muted{color:#6b7090}
+.clock{font-size:clamp(3rem,12vw,5rem);font-weight:800;font-variant-numeric:tabular-nums;text-align:center;color:var(--navy)}
+.clock.warn{color:var(--red);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.08);opacity:.55}}
+@media (prefers-reduced-motion:reduce){.clock.warn{animation:none}}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:6px 0 14px}
+.bar i{display:block;height:100%;width:100%;background:var(--gold);transition:width .2s linear}
+#modal{position:fixed;inset:0;background:#000b;display:grid;place-items:center;z-index:20}#modal[hidden]{display:none}
+#modal div{background:#fff;padding:26px 34px;border-radius:12px;text-align:center}
+</style></head><body>
+<nav><a class="on" href="index.html">Trang chủ</a><a href="lythuyet.html">Trả lời lý thuyết</a><a href="baitap23.html">Bài tập 23</a><a href="baitap22.html">Bài tập 22</a><a href="diemdanh.html">Thông tin điểm danh</a></nav>
+<header><h1>Đề thi kết thúc học phần: Lập trình Web</h1><p>Đề số 1 · Phần 2: Bài tập thực hành</p></header>
+<main>
+
+<section><h2>Bài 1: Danh sách sản phẩm và tìm kiếm</h2>
+<label for="q">Tìm theo tên sản phẩm</label><input id="q" placeholder="Ví dụ: logitech, LAPTOP, ssd..." autocomplete="off">
+<p id="info" class="muted" role="status"></p><div class="grid" id="grid"></div>
+<div class="logic"><b>Giải thích logic</b><ul>
+<li><b>Dữ liệu:</b> mảng JavaScript, mỗi phần tử có tên và giá. Tên dạng chữ thường được tính sẵn một lần.</li>
+<li><b>Không phân biệt hoa thường:</b> đưa cả từ khóa và tên về chữ thường rồi so bằng <code>includes()</code>; <code>trim()</code> bỏ khoảng trắng thừa.</li>
+<li><b>Chống injection:</b> không bao giờ gán chuỗi người dùng vào <code>innerHTML</code>. Mọi nội dung (kể cả từ khóa trong thông báo lỗi) được đưa vào bằng <code>textContent</code> hoặc node văn bản, nên thẻ như &lt;script&gt; chỉ hiện thành chữ, không chạy.</li>
+<li><b>Tối ưu:</b> debounce 150 ms để không lọc lại sau mỗi phím gõ nhanh; dùng <code>replaceChildren()</code> để vẽ lại danh sách một lần.</li>
+<li><b>Không có kết quả:</b> hiện thông báo lỗi màu đỏ thay vì để trống.</li></ul></div></section>
+
+<section><h2>Bài 2: Form đăng ký</h2>
+<form id="reg" novalidate>
+<label for="fn">Tên</label><input id="fn" autocomplete="name"><small class="err" id="e-fn"></small>
+<label for="em">Email</label><input id="em" type="email" autocomplete="email"><small class="err" id="e-em"></small>
+<label for="pw">Mật khẩu</label><div class="row"><input id="pw" type="password" autocomplete="new-password" style="flex:1;width:auto"><button type="button" id="eye" class="ghost">Hiện</button></div>
+<ul class="rules" id="rules"><li data-r="len">Ít nhất 8 ký tự</li><li data-r="up">Chữ hoa</li><li data-r="lo">Chữ thường</li><li data-r="num">Chữ số</li></ul><small class="err" id="e-pw"></small>
+<label class="chk"><input type="checkbox" id="ag"> Đồng ý điều khoản</label><small class="err" id="e-ag"></small>
+<button>Đăng ký</button></form>
+<p id="ok" class="okmsg" role="status"></p>
+<p class="muted"><span id="saved"></span> <button type="button" class="ghost" id="clear" hidden>Xóa dữ liệu đã lưu</button></p>
+<div class="logic"><b>Giải thích logic</b><ul>
+<li><b>Sự kiện submit:</b> gọi <code>preventDefault()</code> để chặn tải lại trang, tự kiểm tra cả 4 trường rồi mới lưu; sai thì hiện lỗi ngay dưới từng trường.</li>
+<li><b>Validate:</b> email bằng regex; mật khẩu kiểm tra từng điều kiện (≥8 ký tự, hoa, thường, số) và hiện tick xanh theo thời gian thực.</li>
+<li><b>Bảo mật dữ liệu cục bộ:</b> LocalStorage là văn bản thuần, ai mở DevTools cũng đọc được và mã JavaScript độc hại (XSS) cũng đọc được. Vì vậy <b>không lưu mật khẩu</b>, chỉ lưu tên và email; mật khẩu thật phải gửi qua HTTPS tới máy chủ để băm (bcrypt/argon2). Dữ liệu đọc ra chỉ hiển thị bằng <code>textContent</code>.</li>
+<li><b>Xử lý lỗi:</b> bọc LocalStorage trong <code>try/catch</code> vì trình duyệt có thể chặn hoặc đầy bộ nhớ.</li></ul></div></section>
+
+<section><h2>Bài 3: Đồng hồ đếm ngược 10 phút</h2>
+<div class="clock" id="clock" role="timer">10:00</div><div class="bar"><i id="bar"></i></div>
+<div class="row c"><button id="go">Bắt đầu</button><button id="pause" class="ghost">Tạm dừng</button><button id="reset" class="ghost">Đặt lại</button></div>
+<div class="logic"><b>Giải thích logic</b><ul>
+<li><b>Cập nhật thời gian thực:</b> <code>setInterval</code> chạy mỗi 200 ms, nhưng thời gian còn lại luôn tính từ <code>mốc kết thúc − giờ hiện tại</code>, không đếm "trừ 1 mỗi lần", nên không bị lệch khi tab bị trình duyệt làm chậm.</li>
+<li><b>Tránh memory leak:</b> chỉ giữ một <code>timerId</code>; trước khi tạo interval mới luôn kiểm tra, và gọi <code>clearInterval</code> khi hết giờ, tạm dừng, đặt lại hoặc rời trang.</li>
+<li><b>Dưới 1 phút:</b> thêm class <code>warn</code>, CSS đổi màu đỏ và chạy animation nhấp nháy (tắt nếu người dùng chọn giảm chuyển động). Hết giờ hiện modal, nút Đóng được focus và phím Esc cũng đóng được.</li>
+<li><b>Khi deploy lên hosting:</b> đồng hồ máy người dùng có thể sai. Trang gửi một yêu cầu HEAD tới chính máy chủ, đọc header <code>Date</code> để tính độ lệch và cộng vào giờ; nếu không có mạng thì dùng giờ máy.</li></ul></div></section>
+</main>
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="mt" hidden><div><h2 id="mt">Hết giờ!</h2><p>Thời gian 10 phút đã kết thúc.</p><button id="mclose">Đóng</button></div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ===== Bài 1 ===== */
+const products=[["Laptop Dell Inspiron 15",15990000],["Chuột không dây Logitech",350000],["Bàn phím cơ Keychron",1890000],["Tai nghe Bluetooth Sony",2490000],["Màn hình LG 24 inch",3290000],["Webcam HD Logitech",790000],["Ổ cứng SSD 512GB",1190000],["Loa mini JBL",990000]]
+ .map(([n,p])=>({n,p,l:n.toLowerCase()}));
+const grid=$("grid"),qIn=$("q"),info=$("info");
+function mark(text,k){const f=document.createDocumentFragment(),i=k?text.toLowerCase().indexOf(k):-1;
+ if(i<0){f.append(text);return f}
+ const m=document.createElement("mark");m.textContent=text.slice(i,i+k.length);
+ f.append(text.slice(0,i),m,text.slice(i+k.length));return f}
+function render(){const k=qIn.value.trim().toLowerCase(),r=products.filter(x=>x.l.includes(k));
+ grid.replaceChildren();
+ r.forEach(x=>{const c=document.createElement("article"),h=document.createElement("h3"),p=document.createElement("p");
+  c.className="card";h.append(mark(x.n,k));p.textContent=x.p.toLocaleString("vi-VN")+" ₫";c.append(h,p);grid.append(c)});
+ info.className=r.length?"muted":"err";
+ info.textContent=r.length?"Hiển thị "+r.length+"/"+products.length+" sản phẩm":"Không tìm thấy sản phẩm nào với từ khóa \""+qIn.value.trim()+"\"."}
+let debounce;qIn.addEventListener("input",()=>{clearTimeout(debounce);debounce=setTimeout(render,150)});render();
+
+/* ===== Bài 2 ===== */
+const fnI=$("fn"),emI=$("em"),pwI=$("pw"),agI=$("ag");
+const RULES={len:v=>v.length>=8,up:v=>/[A-Z]/.test(v),lo:v=>/[a-z]/.test(v),num:v=>/\d/.test(v)};
+const setErr=(id,m)=>{$("e-"+id).textContent=m;return !m};
+const vName=()=>setErr("fn",fnI.value.trim().length<2?"Vui lòng nhập tên (ít nhất 2 ký tự).":"");
+const vMail=()=>setErr("em",/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emI.value.trim())?"":"Email không hợp lệ (ví dụ: ten@example.com).");
+function vPw(){let ok=true;document.querySelectorAll("#rules li").forEach(li=>{const p=RULES[li.dataset.r](pwI.value);li.classList.toggle("pass",p);ok=ok&&p});
+ return setErr("pw",ok?"":"Mật khẩu chưa đủ mạnh.")}
+const vAg=()=>setErr("ag",agI.checked?"":"Bạn cần đồng ý điều khoản.");
+fnI.addEventListener("blur",vName);emI.addEventListener("blur",vMail);pwI.addEventListener("input",vPw);agI.addEventListener("change",vAg);
+$("eye").addEventListener("click",e=>{const hide=pwI.type==="password";pwI.type=hide?"text":"password";e.target.textContent=hide?"Ẩn":"Hiện"});
+function showSaved(){let u=null;try{u=JSON.parse(localStorage.getItem("dk_user"))}catch(x){}
+ $("saved").textContent=u?"Đã lưu: "+u.name+" ("+u.email+")":"Chưa có dữ liệu lưu.";$("clear").hidden=!u}
+$("reg").addEventListener("submit",e=>{e.preventDefault();
+ const ok=[vName(),vMail(),vPw(),vAg()].every(Boolean),msg=$("ok");msg.textContent="";if(!ok)return;
+ try{localStorage.setItem("dk_user",JSON.stringify({name:fnI.value.trim(),email:emI.value.trim(),at:new Date().toISOString()}));
+  msg.textContent="Đăng ký thành công! Dữ liệu đã được lưu vào LocalStorage.";e.target.reset();
+  document.querySelectorAll("#rules li").forEach(li=>li.classList.remove("pass"));showSaved()}
+ catch(x){msg.textContent="Không thể lưu dữ liệu: trình duyệt đang chặn LocalStorage."}});
+$("clear").addEventListener("click",()=>{try{localStorage.removeItem("dk_user")}catch(x){}showSaved()});showSaved();
+
+/* ===== Bài 3 ===== */
+const TOTAL=600000,clock=$("clock"),bar=$("bar"),dlg=$("modal");
+let left=TOTAL,endAt=0,tid=null,off=0;
+const now=()=>Date.now()+off;
+fetch(location.href,{method:"HEAD",cache:"no-store"}).then(r=>{const d=r.headers.get("Date");if(d)off=new Date(d).getTime()-Date.now()}).catch(()=>{});
+function draw(){const s=Math.ceil(left/1000);
+ clock.textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+ bar.style.width=(left/TOTAL*100)+"%";clock.classList.toggle("warn",left>0&&left<60000)}
+function stop(){clearInterval(tid);tid=null}
+function openModal(){dlg.hidden=false;$("mclose").focus()}
+function tick(){left=Math.max(0,endAt-now());draw();if(left===0){stop();openModal()}}
+$("go").addEventListener("click",()=>{if(tid)return;if(left===0)left=TOTAL;endAt=now()+left;tid=setInterval(tick,200);tick()});
+$("pause").addEventListener("click",()=>{if(!tid)return;stop();left=Math.max(0,endAt-now());draw()});
+$("reset").addEventListener("click",()=>{stop();left=TOTAL;draw()});
+$("mclose").addEventListener("click",()=>{dlg.hidden=true});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")dlg.hidden=true});
+window.addEventListener("pagehide",stop);draw();
+</script></body></html>
